@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:teacher_dashboard/theme/app_theme.dart';
 import 'package:teacher_dashboard/widgets/custom_app_bar.dart';
 
@@ -12,11 +13,11 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool _pushNotificationsEnabled = true;
   bool _emailNotificationsEnabled = false;
-  bool _darkModeEnabled = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -135,12 +136,9 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 SwitchListTile(
                   title: Text('Dark Mode', style: theme.textTheme.bodyLarge),
-                  value: _darkModeEnabled,
+                  value: themeNotifier.isDarkMode(),
                   onChanged: (bool value) {
-                    setState(() {
-                      _darkModeEnabled = value;
-                      // Implement theme switching logic here if needed
-                    });
+                    themeNotifier.toggleTheme();
                   },
                   secondary: const Icon(
                     Icons.brightness_6_outlined,
@@ -151,6 +149,36 @@ class _SettingsPageState extends State<SettingsPage> {
                     horizontal: 16,
                     vertical: 8,
                   ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSectionTitle(context, 'Account'),
+          Card(
+            elevation: 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                _buildSettingsTile(
+                  context,
+                  'Edit Profile',
+                  'Update your personal information',
+                  Icons.person_outline,
+                ),
+                _buildSettingsTile(
+                  context,
+                  'Change Password',
+                  'Update your account security',
+                  Icons.lock_outline,
+                ),
+                _buildSettingsTile(
+                  context,
+                  'Logout',
+                  'Sign out of your account',
+                  Icons.logout_outlined,
                 ),
               ],
             ),
@@ -191,9 +219,9 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Text(
         title,
         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: AppTheme.primaryColor,
-        ),
+              fontWeight: FontWeight.bold,
+              color: AppTheme.primaryColor,
+            ),
       ),
     );
   }
@@ -204,13 +232,12 @@ class _SettingsPageState extends State<SettingsPage> {
     String subtitle,
     IconData icon,
   ) {
+    final theme = Theme.of(context);
     return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryColor.withAlpha(200)),
-      title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
-      subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+      leading: Icon(icon, color: theme.colorScheme.primary.withAlpha(200)),
+      title: Text(title, style: theme.textTheme.bodyLarge),
+      subtitle: Text(subtitle, style: theme.textTheme.bodyMedium),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      // onTap: () { // Optional: Navigate to a detail page for this setting
-      // },
     );
   }
 }
