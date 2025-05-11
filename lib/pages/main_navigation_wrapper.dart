@@ -36,39 +36,68 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
         index: _selectedIndex,
         children: _widgetOptions,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            activeIcon: Icon(Icons.calendar_today),
-            label: 'Schedule',
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(10), // Replaced withOpacity(0.04)
+              blurRadius: 16,
+              offset: const Offset(0, -2),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
+            child: NavigationBar(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: _onItemTapped,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              height: 65,
+              surfaceTintColor: Colors.transparent,
+              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+              destinations: <NavigationDestination>[
+                NavigationDestination(
+                  icon: Icon(Icons.dashboard_outlined,
+                      size: 24, color: AppTheme.textSecondary),
+                  selectedIcon: Icon(Icons.dashboard,
+                      size: 24, color: AppTheme.primaryColor),
+                  label: 'Dashboard',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.calendar_today_outlined,
+                      size: 24, color: AppTheme.textSecondary),
+                  selectedIcon: Icon(Icons.calendar_today,
+                      size: 24, color: AppTheme.primaryColor),
+                  label: 'Schedule',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.bar_chart_outlined,
+                      size: 24, color: AppTheme.textSecondary),
+                  selectedIcon: Icon(Icons.bar_chart,
+                      size: 24, color: AppTheme.primaryColor),
+                  label: 'Reports',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.settings_outlined,
+                      size: 24, color: AppTheme.textSecondary),
+                  selectedIcon: Icon(Icons.settings,
+                      size: 24, color: AppTheme.primaryColor),
+                  label: 'Settings',
+                ),
+              ],
+              indicatorColor:
+                  AppTheme.primaryColor.withAlpha(38), // ~0.15 opacity
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart_outlined),
-            activeIcon: Icon(Icons.bar_chart),
-            label: 'Reports',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: AppTheme.primaryColor,
-        unselectedItemColor: AppTheme.textSecondary.withAlpha(
-          150,
-        ), // Adjusted for better visibility
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        onTap: _onItemTapped,
-        backgroundColor: Colors.white, // Added background color for consistency
-        elevation: 8.0, // Added elevation
+        ),
       ),
     );
   }

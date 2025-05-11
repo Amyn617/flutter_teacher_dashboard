@@ -8,6 +8,7 @@ import 'package:teacher_dashboard/widgets/summary_card.dart';
 import 'package:teacher_dashboard/widgets/calendar_card.dart';
 import 'package:teacher_dashboard/widgets/upcoming_class.dart';
 import 'package:teacher_dashboard/theme/app_theme.dart';
+import 'package:animate_do/animate_do.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -66,20 +67,26 @@ class DashboardPage extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: SummaryCard(
-                  title: 'Total Classes',
-                  value: classes.length.toString(),
-                  icon: Icons.school_outlined,
-                  color: AppTheme.primaryColor,
+                child: FadeInLeft(
+                  duration: const Duration(milliseconds: 600),
+                  child: SummaryCard(
+                    title: 'Total Classes',
+                    value: classes.length.toString(),
+                    icon: Icons.school_outlined,
+                    color: AppTheme.primaryColor,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: SummaryCard(
-                  title: 'Avg. Attendance',
-                  value: '${averageAttendance.toStringAsFixed(1)}%',
-                  icon: Icons.bar_chart_outlined,
-                  color: AppTheme.accentColor,
+                child: FadeInRight(
+                  duration: const Duration(milliseconds: 600),
+                  child: SummaryCard(
+                    title: 'Avg. Attendance',
+                    value: '${averageAttendance.toStringAsFixed(1)}%',
+                    icon: Icons.bar_chart_outlined,
+                    color: AppTheme.accentColor,
+                  ),
                 ),
               ),
             ],
@@ -88,20 +95,26 @@ class DashboardPage extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: SummaryCard(
-                  title: 'Total Students',
-                  value: totalStudents.toString(),
-                  icon: Icons.people_outline,
-                  color: AppTheme.secondaryColor,
+                child: FadeInLeft(
+                  duration: const Duration(milliseconds: 800),
+                  child: SummaryCard(
+                    title: 'Total Students',
+                    value: totalStudents.toString(),
+                    icon: Icons.people_outline,
+                    color: AppTheme.secondaryColor,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: SummaryCard(
-                  title: 'Classes Today',
-                  value: classesToday.toString(),
-                  icon: Icons.today_outlined,
-                  color: AppTheme.warning,
+                child: FadeInRight(
+                  duration: const Duration(milliseconds: 800),
+                  child: SummaryCard(
+                    title: 'Classes Today',
+                    value: classesToday.toString(),
+                    icon: Icons.today_outlined,
+                    color: AppTheme.warning,
+                  ),
                 ),
               ),
             ],
@@ -109,7 +122,10 @@ class DashboardPage extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Calendar Section
-          const CalendarCard(),
+          FadeIn(
+            duration: const Duration(milliseconds: 900),
+            child: const CalendarCard(),
+          ),
           const SizedBox(height: 24),
 
           // Upcoming Classes Section
@@ -212,14 +228,30 @@ class DashboardPage extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Add new class
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Add Class'),
-        backgroundColor: AppTheme.accentColor,
-        foregroundColor: Colors.white,
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.accentColor.withAlpha(76), // 0.3 * 255 = ~76
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            // Add new class
+          },
+          icon: const Icon(Icons.add),
+          label: const Text(
+            'Add Class',
+            style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
+          ),
+          backgroundColor: AppTheme.accentColor,
+          foregroundColor: Colors.white,
+        ),
       ),
     );
   }
