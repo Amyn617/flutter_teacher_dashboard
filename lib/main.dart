@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:teacher_dashboard/models/class_model.dart';
-import 'package:teacher_dashboard/pages/dashboard_page.dart';
 import 'package:teacher_dashboard/pages/class_detail_page.dart';
 import 'package:teacher_dashboard/services/attendance_service.dart';
 import 'package:teacher_dashboard/theme/app_theme.dart';
+import 'package:teacher_dashboard/pages/main_navigation_wrapper.dart';
 
 void main() {
   runApp(
@@ -23,11 +23,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Teacher Attendance Dashboard',
       theme: AppTheme.getTheme(),
-      initialRoute: '/',
+      home: const MainNavigationWrapper(),
       onGenerateRoute: (settings) {
-        if (settings.name == '/') {
-          return MaterialPageRoute(builder: (context) => const DashboardPage());
-        } else if (settings.name == '/class-detail') {
+        if (settings.name == '/class-detail') {
           final classModel = settings.arguments as ClassModel;
           return MaterialPageRoute(
             builder: (context) => ClassDetailPage(classModel: classModel),

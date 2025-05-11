@@ -223,39 +223,6 @@ class DashboardPage extends StatelessWidget {
         backgroundColor: AppTheme.accentColor,
         foregroundColor: Colors.white,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex:
-            0, // This should be managed by a state variable if navigation is implemented
-        onTap: (index) {
-          // Handle bottom navigation tap
-        },
-        selectedItemColor: AppTheme.primaryColor,
-        unselectedItemColor: AppTheme.textSecondary,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed, // Ensures all items are visible
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            activeIcon: Icon(Icons.calendar_today),
-            label: 'Schedule',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart_outlined),
-            activeIcon: Icon(Icons.bar_chart),
-            label: 'Reports',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-      ),
     );
   }
 }
