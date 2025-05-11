@@ -74,8 +74,7 @@ class _ClassDetailPageState extends State<ClassDetailPage>
 
     // Create a new attendance record
     final record = AttendanceRecord(
-      id:
-          '${widget.classModel.id}_${DateFormat('yyyyMMdd').format(_selectedDay)}',
+      id: '${widget.classModel.id}_${DateFormat('yyyyMMdd').format(_selectedDay)}',
       classId: widget.classModel.id,
       date: _selectedDay,
       studentAttendance: Map.from(_attendanceMap),
@@ -103,6 +102,20 @@ class _ClassDetailPageState extends State<ClassDetailPage>
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.classModel.name),
+        actions: [
+          IconButton(
+            icon: const CircleAvatar(
+              backgroundImage: AssetImage(
+                'assets/images/avatar_placeholder.png',
+              ),
+              radius: 18,
+            ),
+            onPressed: () {
+              // Optional: Navigate to a detailed profile page or action
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [Tab(text: 'Attendance'), Tab(text: 'Students')],
@@ -192,10 +205,9 @@ class _ClassDetailPageState extends State<ClassDetailPage>
                 margin: const EdgeInsets.symmetric(vertical: 4),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundImage:
-                        student.imageUrl.isNotEmpty
-                            ? NetworkImage(student.imageUrl)
-                            : null,
+                    backgroundImage: student.imageUrl.isNotEmpty
+                        ? NetworkImage(student.imageUrl)
+                        : null,
                     child:
                         student.imageUrl.isEmpty ? Text(student.name[0]) : null,
                   ),
@@ -247,14 +259,12 @@ class _ClassDetailPageState extends State<ClassDetailPage>
           margin: const EdgeInsets.symmetric(vertical: 6),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundImage:
-                  student.imageUrl.isNotEmpty
-                      ? NetworkImage(student.imageUrl)
-                      : null,
-              child:
-                  student.imageUrl.isEmpty
-                      ? Text(student.name[0].toUpperCase())
-                      : null,
+              backgroundImage: student.imageUrl.isNotEmpty
+                  ? NetworkImage(student.imageUrl)
+                  : null,
+              child: student.imageUrl.isEmpty
+                  ? Text(student.name[0].toUpperCase())
+                  : null,
             ),
             title: Text(student.name, style: theme.textTheme.titleMedium),
             subtitle: Text('Roll No: ${student.rollNumber}'),

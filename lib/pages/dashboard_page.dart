@@ -31,7 +31,7 @@ class DashboardPage extends StatelessWidget {
       if (records.isNotEmpty) {
         totalAttendanceRate +=
             records.fold<double>(0, (prev, rec) => prev + rec.attendanceRate) /
-            records.length;
+                records.length;
       }
       if (classModel.days.contains(currentDay)) {
         classesToday++;
@@ -47,8 +47,8 @@ class DashboardPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const CircleAvatar(
-              backgroundImage: NetworkImage(
-                'https://randomuser.me/api/portraits/women/44.jpg', // Placeholder
+              backgroundImage: AssetImage(
+                'assets/images/avatar_placeholder.png',
               ),
               radius: 18,
             ),
@@ -147,11 +147,10 @@ class DashboardPage extends StatelessWidget {
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount:
-                  classes
-                      .where((c) => c.days.contains(currentDay))
-                      .toList()
-                      .length,
+              itemCount: classes
+                  .where((c) => c.days.contains(currentDay))
+                  .toList()
+                  .length,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final todayClasses =
@@ -194,10 +193,9 @@ class DashboardPage extends StatelessWidget {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount:
-                classes.length > 3
-                    ? 3
-                    : classes.length, // Show a few or a link to all
+            itemCount: classes.length > 3
+                ? 3
+                : classes.length, // Show a few or a link to all
             itemBuilder: (context, index) {
               // Potentially use a different card or a more compact version here
               return ClassCard(

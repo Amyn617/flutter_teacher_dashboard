@@ -27,11 +27,11 @@ class AppTheme {
         primary: primaryColor,
         secondary: secondaryColor,
         tertiary: accentColor,
-        surface: backgroundColor, // Replaced background with surface
+        surface: backgroundColor,
         error: error,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
-        onSurface: textPrimary, // Replaced onBackground with onSurface
+        onSurface: textPrimary,
         onError: Colors.white,
         brightness: Brightness.light,
       ),

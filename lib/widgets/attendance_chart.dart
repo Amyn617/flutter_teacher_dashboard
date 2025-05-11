@@ -34,7 +34,8 @@ class AttendanceChart extends StatelessWidget {
                   barTouchData: BarTouchData(
                     enabled: true,
                     touchTooltipData: BarTouchTooltipData(
-                      tooltipBgColor: theme.colorScheme.primary.withAlpha(230),
+                      getTooltipColor: (group) =>
+                          theme.colorScheme.primary.withAlpha(230),
                       tooltipPadding: const EdgeInsets.all(8),
                       tooltipMargin: 8,
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
