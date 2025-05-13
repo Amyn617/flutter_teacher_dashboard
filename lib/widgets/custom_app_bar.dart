@@ -16,6 +16,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -23,14 +25,16 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.primaryColor,
-            const Color(0xFF4668D9), // Slightly lighter shade
+            isDarkMode ? const Color(0xFF1A1A2E) : AppTheme.primaryColor,
+            isDarkMode ? const Color(0xFF303F9F) : const Color(0xFF4668D9),
           ],
           stops: const [0.2, 0.9],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withAlpha(51), // 0.2 * 255 = ~51
+            color: isDarkMode
+                ? Colors.black.withAlpha(80)
+                : AppTheme.primaryColor.withAlpha(51),
             offset: const Offset(0, 2),
             blurRadius: 8,
             spreadRadius: 0,
@@ -54,7 +58,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                       letterSpacing: 0.3,
                       shadows: [
                         Shadow(
-                          color: Colors.black.withAlpha(51), // ~0.2 opacity
+                          color: Colors.black.withAlpha(51),
                           offset: const Offset(0, 1),
                           blurRadius: 2,
                         )
@@ -69,7 +73,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                       child: Text(
                         subtitle,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withAlpha(217), // ~0.85 opacity
+                          color: Colors.white.withAlpha(217),
                           fontWeight: FontWeight.w400,
                           letterSpacing: 0.2,
                         ),
@@ -80,7 +84,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
             if (actions != null) ...actions!,
           ],
         ),

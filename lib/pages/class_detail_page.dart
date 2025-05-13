@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:teacher_dashboard/models/class_model.dart';
-import 'package:teacher_dashboard/models/student_model.dart'; // Re-added import
+import 'package:teacher_dashboard/models/student_model.dart';
 import 'package:teacher_dashboard/models/attendance_model.dart';
 import 'package:teacher_dashboard/services/attendance_service.dart';
-import 'package:teacher_dashboard/widgets/attendance_chart.dart';
-import 'package:intl/intl.dart';
-import 'package:table_calendar/table_calendar.dart';
+import 'package:teacher_dashboard/theme/app_theme.dart';
+import 'package:teacher_dashboard/widgets/sticky_app_bar.dart';
+import 'package:animate_do/animate_do.dart';
 
 class ClassDetailPage extends StatefulWidget {
   final ClassModel classModel;
@@ -17,260 +17,381 @@ class ClassDetailPage extends StatefulWidget {
   State<ClassDetailPage> createState() => _ClassDetailPageState();
 }
 
-class _ClassDetailPageState extends State<ClassDetailPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  DateTime _selectedDay = DateTime.now();
-  DateTime _focusedDay = DateTime.now();
+class _ClassDetailPageState extends State<ClassDetailPage> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  bool _isMarkingAttendance = false;
 
-  Map<String, bool> _attendanceMap = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-
-    // Initialize attendance map
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final attendanceService = Provider.of<AttendanceService>(
-        context,
-        listen: false,
-      );
-      final students = attendanceService.getStudentsForClass(
-        widget.classModel.id,
-      );
-      final record = attendanceService.getAttendanceRecord(
-        widget.classModel.id,
-        _selectedDay,
-      );
-
-      if (record != null) {
-        setState(() {
-          _attendanceMap = Map.from(record.studentAttendance);
-        });
-      } else {
-        final initialMap = <String, bool>{};
-        for (final student in students) {
-          initialMap[student.id] = false;
-        }
-        setState(() {
-          _attendanceMap = initialMap;
-        });
-      }
-    });
-  }
+  final Map<String, bool> _attendanceMap = {};
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
-  }
-
-  void _saveAttendance() {
-    final attendanceService = Provider.of<AttendanceService>(
-      context,
-      listen: false,
-    );
-
-    // Create a new attendance record
-    final record = AttendanceRecord(
-      id: '${widget.classModel.id}_${DateFormat('yyyyMMdd').format(_selectedDay)}',
-      classId: widget.classModel.id,
-      date: _selectedDay,
-      studentAttendance: Map.from(_attendanceMap),
-    );
-
-    // Save the record
-    attendanceService.addAttendanceRecord(record);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Attendance saved successfully!'),
-        backgroundColor: Colors.green,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     final attendanceService = Provider.of<AttendanceService>(context);
-    final students = attendanceService.getStudentsForClass(
-      widget.classModel.id,
-    );
+    final attendanceRecords =
+        attendanceService.getAttendanceForClass(widget.classModel.id);
+
+    // Get students for this class
+    final List<StudentModel> students =
+        attendanceService.getStudentsForClass(widget.classModel.id);
+
+    // Generate mock student data if none exists
+    final List<StudentModel> allStudents = students.isNotEmpty
+        ? students
+        : List.generate(
+            widget.classModel.totalStudents,
+            (index) => StudentModel(
+              id: 'student_${widget.classModel.id}_$index',
+              name: 'Student ${index + 1}',
+              rollNumber: '${widget.classModel.id}-${index + 1}',
+            ),
+          );
+
+    // Filter students based on search query
+    final filteredStudents = allStudents.where((student) {
+      return student.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          student.rollNumber.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
+
+    // Initialize attendance map if marking attendance
+    if (_isMarkingAttendance && _attendanceMap.isEmpty) {
+      for (var student in allStudents) {
+        _attendanceMap[student.id] = true; // Default present
+      }
+    }
+
+    // Calculate attendance statistics
+    double averageAttendance = 0;
+    if (attendanceRecords.isNotEmpty) {
+      final sum = attendanceRecords.fold<double>(
+        0,
+        (prev, record) => prev + record.attendanceRate,
+      );
+      averageAttendance = sum / attendanceRecords.length;
+    }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.classModel.name),
-        actions: [
-          IconButton(
-            icon: const CircleAvatar(
-              backgroundImage: AssetImage(
-                'assets/images/avatar_placeholder.png',
+      body: CustomScrollView(
+        slivers: [
+          StickyAppBar(
+            title: widget.classModel.name,
+            subtitle: widget.classModel.subject,
+            expandedHeight: 120.0,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () {
+                  // Edit class feature
+                },
               ),
-              radius: 18,
-            ),
-            onPressed: () {
-              // Optional: Navigate to a detailed profile page or action
-            },
+              const SizedBox(width: 8),
+            ],
           ),
-          const SizedBox(width: 8),
+          SliverToBoxAdapter(
+            child: FadeIn(
+              duration: const Duration(milliseconds: 600),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Class Overview',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getAttendanceColor(
+                                        averageAttendance, isDarkMode)
+                                    .withAlpha(40),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                '${averageAttendance.toStringAsFixed(1)}% Avg',
+                                style: TextStyle(
+                                  color: _getAttendanceColor(
+                                      averageAttendance, isDarkMode),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildInfoRow(
+                          Icons.calendar_today_outlined,
+                          'Schedule:',
+                          '${widget.classModel.days.join(", ")} at ${widget.classModel.time}',
+                          theme,
+                          isDarkMode,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildInfoRow(
+                          Icons.room_outlined,
+                          'Location:',
+                          widget.classModel.room.isEmpty
+                              ? 'Not specified'
+                              : widget.classModel.room,
+                          theme,
+                          isDarkMode,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildInfoRow(
+                          Icons.people_outline,
+                          'Students:',
+                          '${widget.classModel.totalStudents} enrolled',
+                          theme,
+                          isDarkMode,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildInfoRow(
+                          Icons.bar_chart_outlined,
+                          'Attendance Records:',
+                          '${attendanceRecords.length} sessions recorded',
+                          theme,
+                          isDarkMode,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search students...',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _isMarkingAttendance = !_isMarkingAttendance;
+                        if (!_isMarkingAttendance) {
+                          _attendanceMap.clear();
+                        }
+                      });
+                    },
+                    icon: Icon(
+                      _isMarkingAttendance
+                          ? Icons.close
+                          : Icons.check_circle_outline,
+                    ),
+                    label: Text(
+                        _isMarkingAttendance ? 'Cancel' : 'Mark Attendance'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isMarkingAttendance
+                          ? Theme.of(context).colorScheme.error
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final student = filteredStudents[index];
+                return FadeInUp(
+                  from: 20,
+                  delay: Duration(milliseconds: 50 * index),
+                  duration: const Duration(milliseconds: 300),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 4.0),
+                    child: Card(
+                      elevation: 1,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: student.imageUrl.isNotEmpty
+                              ? NetworkImage(student.imageUrl) as ImageProvider
+                              : const AssetImage(
+                                  'assets/images/avatar_placeholder.png'),
+                          radius: 20,
+                        ),
+                        title: Text(student.name),
+                        subtitle: Text('Roll #: ${student.rollNumber}'),
+                        trailing: _isMarkingAttendance
+                            ? Checkbox(
+                                value: _attendanceMap[student.id] ?? true,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _attendanceMap[student.id] = value ?? false;
+                                  });
+                                },
+                                activeColor: isDarkMode
+                                    ? AppTheme.darkAccentColor
+                                    : AppTheme.primaryColor,
+                              )
+                            : null,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+              childCount: filteredStudents.length,
+            ),
+          ),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 80), // Bottom padding for FAB
+          ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [Tab(text: 'Attendance'), Tab(text: 'Students')],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildAttendanceTab(theme, students, attendanceService),
-          _buildStudentsTab(students, theme),
-        ],
-      ),
+      floatingActionButton: _isMarkingAttendance
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                _saveAttendance(context);
+              },
+              label: const Text('Save Attendance'),
+              icon: const Icon(Icons.save_outlined),
+              backgroundColor:
+                  isDarkMode ? AppTheme.darkAccentColor : AppTheme.primaryColor,
+            )
+          : null,
     );
   }
 
-  Widget _buildAttendanceTab(
-    ThemeData theme,
-    List<StudentModel> students,
-    AttendanceService attendanceService,
-  ) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
+  Widget _buildInfoRow(IconData icon, String label, String value,
+      ThemeData theme, bool isDarkMode) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Calendar
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TableCalendar(
-              firstDay: DateTime.utc(2020, 1, 1),
-              lastDay: DateTime.utc(2030, 12, 31),
-              focusedDay: _focusedDay,
-              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-              onDaySelected: (selectedDay, focusedDay) {
-                setState(() {
-                  _selectedDay = selectedDay;
-                  _focusedDay = focusedDay;
-                  // Load attendance for the selected day
-                  final record = attendanceService.getAttendanceRecord(
-                    widget.classModel.id,
-                    _selectedDay,
-                  );
-                  if (record != null) {
-                    _attendanceMap = Map.from(record.studentAttendance);
-                  } else {
-                    _attendanceMap = {
-                      for (var student in students) student.id: false,
-                    };
-                  }
-                });
-              },
-              calendarStyle: CalendarStyle(
-                todayDecoration: BoxDecoration(
-                  color: theme.colorScheme.secondary.withAlpha(100),
-                  shape: BoxShape.circle,
-                ),
-                selectedDecoration: BoxDecoration(
-                  color: theme.colorScheme.primary,
-                  shape: BoxShape.circle,
+        Icon(
+          icon,
+          size: 20,
+          color: isDarkMode ? AppTheme.darkAccentColor : AppTheme.primaryColor,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              headerStyle: HeaderStyle(
-                formatButtonVisible: false,
-                titleCentered: true,
-                titleTextStyle: theme.textTheme.titleMedium!,
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: theme.textTheme.bodyMedium,
               ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Attendance List
-        Text(
-          'Mark Attendance for ${DateFormat('MMM d, yyyy').format(_selectedDay)}',
-          style: theme.textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        if (students.isEmpty)
-          const Center(child: Text('No students in this class.'))
-        else
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: students.length,
-            itemBuilder: (context, index) {
-              final student = students[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: student.imageUrl.isNotEmpty
-                        ? NetworkImage(student.imageUrl)
-                        : null,
-                    child:
-                        student.imageUrl.isEmpty ? Text(student.name[0]) : null,
-                  ),
-                  title: Text(student.name),
-                  trailing: Checkbox(
-                    value: _attendanceMap[student.id] ?? false,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        _attendanceMap[student.id] = value ?? false;
-                      });
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-        const SizedBox(height: 20),
-        ElevatedButton.icon(
-          icon: const Icon(Icons.save_alt_outlined),
-          label: const Text('Save Attendance'),
-          onPressed: _saveAttendance,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-          ),
-        ),
-        const SizedBox(height: 24),
-        // Attendance Chart
-        AttendanceChart(
-          weeklyData: attendanceService.getWeeklyAttendanceStats(
-            widget.classModel.id,
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildStudentsTab(List<StudentModel> students, ThemeData theme) {
-    if (students.isEmpty) {
-      return const Center(
-        child: Text('No students enrolled in this class yet.'),
-      );
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: students.length,
-      itemBuilder: (context, index) {
-        final student = students[index];
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 6),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundImage: student.imageUrl.isNotEmpty
-                  ? NetworkImage(student.imageUrl)
-                  : null,
-              child: student.imageUrl.isEmpty
-                  ? Text(student.name[0].toUpperCase())
-                  : null,
-            ),
-            title: Text(student.name, style: theme.textTheme.titleMedium),
-            subtitle: Text('Roll No: ${student.rollNumber}'),
-          ),
-        );
-      },
+  void _saveAttendance(BuildContext context) {
+    // Get the current date
+    final today = DateTime.now();
+
+    // Create an attendance record
+    final attendanceRecord = AttendanceRecord(
+      id: 'attendance_${widget.classModel.id}_${today.millisecondsSinceEpoch}',
+      classId: widget.classModel.id,
+      date: today,
+      studentAttendance: Map<String, bool>.from(_attendanceMap),
     );
+
+    // Get the attendance service
+    final attendanceService =
+        Provider.of<AttendanceService>(context, listen: false);
+
+    // Save the attendance
+    attendanceService.addAttendanceRecord(attendanceRecord);
+
+    // Reset UI and show success message
+    setState(() {
+      _isMarkingAttendance = false;
+      _attendanceMap.clear();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+            'Attendance saved: ${attendanceRecord.attendanceRate.toStringAsFixed(1)}% present'),
+        backgroundColor:
+            attendanceRecord.attendanceRate > 70 ? Colors.green : Colors.orange,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  Color _getAttendanceColor(double rate, bool isDarkMode) {
+    if (isDarkMode) {
+      if (rate >= 80) {
+        return const Color(0xFF4CAF50); // Green for dark mode
+      } else if (rate >= 60) {
+        return const Color(0xFFFFC107); // Amber for dark mode
+      } else {
+        return const Color(0xFFF44336); // Red for dark mode
+      }
+    } else {
+      if (rate >= 80) {
+        return Colors.green;
+      } else if (rate >= 60) {
+        return Colors.orange;
+      } else {
+        return Colors.red;
+      }
+    }
   }
 }

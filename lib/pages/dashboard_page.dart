@@ -3,12 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:teacher_dashboard/services/attendance_service.dart';
 import 'package:teacher_dashboard/widgets/class_card.dart';
 import 'package:intl/intl.dart';
-import 'package:teacher_dashboard/widgets/custom_app_bar.dart';
+import 'package:teacher_dashboard/widgets/sticky_app_bar.dart';
 import 'package:teacher_dashboard/widgets/summary_card.dart';
 import 'package:teacher_dashboard/widgets/calendar_card.dart';
 import 'package:teacher_dashboard/widgets/upcoming_class.dart';
 import 'package:teacher_dashboard/theme/app_theme.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:teacher_dashboard/pages/class_detail_page.dart';
+import 'package:teacher_dashboard/pages/add_class_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -16,6 +18,7 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     final attendanceService = Provider.of<AttendanceService>(context);
     final classes = attendanceService.classes;
     final today = DateFormat('EEEE, MMM d').format(DateTime.now());
@@ -42,198 +45,201 @@ class DashboardPage extends StatelessWidget {
         classes.isNotEmpty ? totalAttendanceRate / classes.length : 0.0;
 
     return Scaffold(
-      appBar: CustomAppBar(
-        title: 'Welcome Back!', // Or a personalized greeting
-        subtitle: today,
-        actions: [
-          IconButton(
-            icon: const CircleAvatar(
-              backgroundImage: AssetImage(
-                'assets/images/avatar_placeholder.png',
-              ),
-              radius: 18,
-            ),
-            onPressed: () {
-              // Profile action
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          // Summary Section
-          Row(
-            children: [
-              Expanded(
-                child: FadeInLeft(
-                  duration: const Duration(milliseconds: 600),
-                  child: SummaryCard(
-                    title: 'Total Classes',
-                    value: classes.length.toString(),
-                    icon: Icons.school_outlined,
-                    color: AppTheme.primaryColor,
+      body: CustomScrollView(
+        slivers: [
+          StickyAppBar(
+            title: 'Welcome Back!',
+            subtitle: today,
+            expandedHeight: 120.0,
+            actions: [
+              IconButton(
+                icon: const CircleAvatar(
+                  backgroundImage: AssetImage(
+                    'assets/images/avatar_placeholder.png',
                   ),
+                  radius: 18,
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: FadeInRight(
-                  duration: const Duration(milliseconds: 600),
-                  child: SummaryCard(
-                    title: 'Avg. Attendance',
-                    value: '${averageAttendance.toStringAsFixed(1)}%',
-                    icon: Icons.bar_chart_outlined,
-                    color: AppTheme.accentColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: FadeInLeft(
-                  duration: const Duration(milliseconds: 800),
-                  child: SummaryCard(
-                    title: 'Total Students',
-                    value: totalStudents.toString(),
-                    icon: Icons.people_outline,
-                    color: AppTheme.secondaryColor,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: FadeInRight(
-                  duration: const Duration(milliseconds: 800),
-                  child: SummaryCard(
-                    title: 'Classes Today',
-                    value: classesToday.toString(),
-                    icon: Icons.today_outlined,
-                    color: AppTheme.warning,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Calendar Section
-          FadeIn(
-            duration: const Duration(milliseconds: 900),
-            child: const CalendarCard(),
-          ),
-          const SizedBox(height: 24),
-
-          // Upcoming Classes Section
-          Text(
-            'Today\'s Schedule',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (classes
-              .where((c) => c.days.contains(currentDay))
-              .toList()
-              .isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child: Center(
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.event_busy_outlined,
-                      size: 48,
-                      color: AppTheme.textSecondary.withAlpha(128),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'No classes scheduled for today.',
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: classes
-                  .where((c) => c.days.contains(currentDay))
-                  .toList()
-                  .length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final todayClasses =
-                    classes.where((c) => c.days.contains(currentDay)).toList();
-                final classModel = todayClasses[index];
-                return UpcomingClass(
-                  classModel: classModel,
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/class-detail',
-                      arguments: classModel,
-                    );
-                  },
-                );
-              },
-            ),
-
-          const SizedBox(height: 24),
-
-          // All Classes Section (Optional, could be a separate tab or page)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'All Your Classes',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              TextButton(
                 onPressed: () {
-                  // Navigate to a page with all classes if needed
+                  // Profile action
                 },
-                child: const Text('View All'),
               ),
+              const SizedBox(width: 8),
             ],
           ),
-          const SizedBox(height: 16),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: classes.length > 3
-                ? 3
-                : classes.length, // Show a few or a link to all
-            itemBuilder: (context, index) {
-              // Potentially use a different card or a more compact version here
-              return ClassCard(
-                classModel: classes[index],
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/class-detail',
-                    arguments: classes[index],
-                  );
-                },
-              );
-            },
+          SliverPadding(
+            padding: const EdgeInsets.all(16.0),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                // Summary Section
+                FadeInUp(
+                  duration: const Duration(milliseconds: 600),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SummaryCard(
+                          title: 'Total Classes',
+                          value: classes.length.toString(),
+                          icon: Icons.school_outlined,
+                          color: isDarkMode
+                              ? AppTheme.darkAccentColor
+                              : AppTheme.primaryColor,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: SummaryCard(
+                          title: 'Avg. Attendance',
+                          value: '${averageAttendance.toStringAsFixed(1)}%',
+                          icon: Icons.bar_chart_outlined,
+                          color: isDarkMode
+                              ? AppTheme.darkAccentColor
+                              : AppTheme.accentColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                FadeInUp(
+                  duration: const Duration(milliseconds: 600),
+                  delay: const Duration(milliseconds: 200),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SummaryCard(
+                          title: 'Total Students',
+                          value: totalStudents.toString(),
+                          icon: Icons.people_outline,
+                          color: isDarkMode
+                              ? AppTheme.darkAccentColor
+                              : AppTheme.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: SummaryCard(
+                          title: 'Classes Today',
+                          value: classesToday.toString(),
+                          icon: Icons.today_outlined,
+                          color: isDarkMode
+                              ? AppTheme.darkAccentColor
+                              : AppTheme.secondaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Calendar Card section
+                FadeIn(
+                  duration: const Duration(milliseconds: 800),
+                  child: const CalendarCard(),
+                ),
+                const SizedBox(height: 24),
+
+                // Today's Classes section
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Today's Classes",
+                        style: theme.textTheme.titleLarge,
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isDarkMode
+                              ? AppTheme.darkAccentColor.withAlpha(40)
+                              : AppTheme.primaryColor.withAlpha(25),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '$classesToday Classes',
+                          style: TextStyle(
+                            color: isDarkMode
+                                ? AppTheme.darkAccentColor
+                                : AppTheme.primaryColor,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Today's classes list
+                ...classes
+                    .where((cls) => cls.days.contains(currentDay))
+                    .map(
+                      (cls) => FadeInLeft(
+                        from: 20,
+                        duration: const Duration(milliseconds: 400),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: UpcomingClass(
+                            classModel: cls,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ClassDetailPage(classModel: cls),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+
+                const SizedBox(height: 24),
+
+                // All Classes section
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text('All Classes', style: theme.textTheme.titleLarge),
+                ),
+
+                // All classes list
+                ...classes.map(
+                  (cls) => FadeInUp(
+                    from: 20,
+                    duration: const Duration(milliseconds: 400),
+                    child: ClassCard(
+                      classModel: cls,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ClassDetailPage(classModel: cls),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                // Bottom padding for FAB
+                const SizedBox(height: 80),
+              ]),
+            ),
           ),
         ],
       ),
       floatingActionButton: Container(
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(28),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.accentColor.withAlpha(76), // 0.3 * 255 = ~76
+              color: theme.colorScheme.primary.withAlpha(60),
               blurRadius: 12,
               offset: const Offset(0, 4),
               spreadRadius: 0,
@@ -242,15 +248,22 @@ class DashboardPage extends StatelessWidget {
         ),
         child: FloatingActionButton.extended(
           onPressed: () {
-            // Add new class
+            // Navigate to add class page
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AddClassPage(),
+              ),
+            );
           },
-          icon: const Icon(Icons.add),
-          label: const Text(
+          label: Text(
             'Add Class',
-            style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
           ),
-          backgroundColor: AppTheme.accentColor,
-          foregroundColor: Colors.white,
+          icon: const Icon(Icons.add),
         ),
       ),
     );

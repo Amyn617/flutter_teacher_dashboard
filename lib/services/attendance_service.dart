@@ -10,6 +10,7 @@ class AttendanceService extends ChangeNotifier {
       id: '1',
       name: 'Computer Science 101',
       subject: 'Introduction to Programming',
+      room: 'Room 302',
       days: ['Monday', 'Wednesday'],
       time: '09:00 AM - 10:30 AM',
       totalStudents: 30,
@@ -18,6 +19,7 @@ class AttendanceService extends ChangeNotifier {
       id: '2',
       name: 'Mathematics 202',
       subject: 'Calculus II',
+      room: 'Room 201',
       days: ['Tuesday', 'Thursday'],
       time: '11:00 AM - 12:30 PM',
       totalStudents: 25,
@@ -26,6 +28,7 @@ class AttendanceService extends ChangeNotifier {
       id: '3',
       name: 'Physics 101',
       subject: 'Mechanics',
+      room: 'Lab 105',
       days: ['Monday', 'Friday'],
       time: '02:00 PM - 03:30 PM',
       totalStudents: 28,
@@ -34,6 +37,7 @@ class AttendanceService extends ChangeNotifier {
       id: '4',
       name: 'Data Structures',
       subject: 'Advanced Programming',
+      room: 'Computer Lab 3',
       days: ['Wednesday', 'Friday'],
       time: '04:00 PM - 05:30 PM',
       totalStudents: 22,
@@ -73,6 +77,11 @@ class AttendanceService extends ChangeNotifier {
   };
 
   final List<AttendanceRecord> _attendanceRecords = [];
+  // Methods to modify data
+  void addClass(ClassModel classModel) {
+    _classes.add(classModel);
+    notifyListeners();
+  }
 
   // Getters
   List<ClassModel> get classes => _classes;

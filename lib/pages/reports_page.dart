@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:teacher_dashboard/services/attendance_service.dart';
 import 'package:teacher_dashboard/widgets/attendance_chart.dart';
-import 'package:teacher_dashboard/widgets/custom_app_bar.dart';
+import 'package:teacher_dashboard/widgets/sticky_app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:teacher_dashboard/theme/app_theme.dart';
 import 'package:animate_do/animate_do.dart';
@@ -47,50 +47,61 @@ class _ReportsPageState extends State<ReportsPage>
     final attendanceService = Provider.of<AttendanceService>(context);
     final classes = attendanceService.classes;
     final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
 
     if (classes.isEmpty) {
       return Scaffold(
-        appBar: CustomAppBar(
-          title: 'Attendance Reports',
-          subtitle: today,
-          actions: [
-            IconButton(
-              icon: const CircleAvatar(
-                backgroundImage: AssetImage(
-                  'assets/images/avatar_placeholder.png',
-                ),
-                radius: 18,
-              ),
-              onPressed: () {
-                // Profile action
-              },
-            ),
-            const SizedBox(width: 8),
-          ],
-        ),
-        body: Center(
-          child: FadeIn(
-            duration: const Duration(milliseconds: 600),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.bar_chart_outlined,
-                  size: 60,
-                  color: AppTheme.textSecondary.withAlpha(100),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No classes available to generate reports.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppTheme.textSecondary,
+        body: CustomScrollView(
+          slivers: [
+            StickyAppBar(
+              title: 'Attendance Reports',
+              subtitle: today,
+              actions: [
+                IconButton(
+                  icon: const CircleAvatar(
+                    backgroundImage: AssetImage(
+                      'assets/images/avatar_placeholder.png',
+                    ),
+                    radius: 18,
                   ),
-                  textAlign: TextAlign.center,
+                  onPressed: () {
+                    // Profile action
+                  },
                 ),
+                const SizedBox(width: 8),
               ],
             ),
-          ),
+            SliverFillRemaining(
+              child: Center(
+                child: FadeIn(
+                  duration: const Duration(milliseconds: 600),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.bar_chart_outlined,
+                        size: 60,
+                        color: isDarkMode
+                            ? Colors.white.withAlpha(100)
+                            : AppTheme.textSecondary.withAlpha(100),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No classes available to generate reports.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: isDarkMode
+                              ? Colors.white.withAlpha(180)
+                              : AppTheme.textSecondary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -107,7 +118,7 @@ class _ReportsPageState extends State<ReportsPage>
                 floating: false,
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
-                  background: CustomAppBar(
+                  background: StickyAppBar(
                     title: 'Attendance Reports',
                     subtitle: today,
                     actions: [
@@ -189,14 +200,18 @@ class _ReportsPageState extends State<ReportsPage>
                                           style: theme.textTheme.titleLarge
                                               ?.copyWith(
                                             fontWeight: FontWeight.bold,
-                                            color: AppTheme.textPrimary,
+                                            color: isDarkMode
+                                                ? Colors.white
+                                                : AppTheme.textPrimary,
                                           ),
                                         ),
                                         Text(
                                           classModel.subject,
                                           style: theme.textTheme.bodyMedium
                                               ?.copyWith(
-                                            color: AppTheme.textSecondary,
+                                            color: isDarkMode
+                                                ? Colors.white70
+                                                : AppTheme.textSecondary,
                                           ),
                                         ),
                                         const SizedBox(height: 16),
@@ -212,11 +227,12 @@ class _ReportsPageState extends State<ReportsPage>
                                                 children: [
                                                   Icon(
                                                     Icons.info_outline,
-                                                    color: AppTheme
-                                                        .textSecondary
-                                                        .withAlpha(
-                                                      150,
-                                                    ),
+                                                    color: isDarkMode
+                                                        ? Colors.white54
+                                                        : AppTheme.textSecondary
+                                                            .withAlpha(
+                                                            150,
+                                                          ),
                                                     size: 32,
                                                   ),
                                                   const SizedBox(height: 8),
@@ -225,8 +241,10 @@ class _ReportsPageState extends State<ReportsPage>
                                                     style: theme
                                                         .textTheme.bodyMedium
                                                         ?.copyWith(
-                                                      color: AppTheme
-                                                          .textSecondary,
+                                                      color: isDarkMode
+                                                          ? Colors.white70
+                                                          : AppTheme
+                                                              .textSecondary,
                                                     ),
                                                     textAlign: TextAlign.center,
                                                   ),

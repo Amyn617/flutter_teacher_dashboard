@@ -8,8 +8,6 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:teacher_dashboard/widgets/upcoming_class.dart';
 import 'package:teacher_dashboard/theme/app_theme.dart';
 import 'package:animate_do/animate_do.dart';
-import 'package:teacher_dashboard/pages/class_detail_page.dart';
-import 'package:teacher_dashboard/pages/add_class_page.dart';
 
 class SchedulePage extends StatefulWidget {
   const SchedulePage({super.key});
@@ -226,8 +224,15 @@ class _SchedulePageState extends State<SchedulePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                ClassDetailPage(classModel: classModel),
+                            builder: (context) => Scaffold(
+                              appBar: AppBar(
+                                title: Text(classModel.name),
+                              ),
+                              body: const Center(
+                                child: Text(
+                                    'Class detail page will be implemented'),
+                              ),
+                            ),
                           ),
                         );
                       },
@@ -245,13 +250,7 @@ class _SchedulePageState extends State<SchedulePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // Navigate to add class page
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddClassPage(),
-            ),
-          );
+          // Add new class functionality
         },
         label: const Text('Add Class'),
         icon: const Icon(Icons.add),
