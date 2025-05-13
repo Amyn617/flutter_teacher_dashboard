@@ -22,7 +22,7 @@ class _AddClassPageState extends State<AddClassPage> {
   final _timeController = TextEditingController();
   final _studentsController = TextEditingController(text: '20');
 
-  List<String> _selectedDays = [];
+  final List<String> _selectedDays = [];
   bool _isLoading = false;
 
   final List<String> _weekDays = [

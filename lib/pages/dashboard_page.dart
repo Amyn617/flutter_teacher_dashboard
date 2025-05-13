@@ -173,9 +173,7 @@ class DashboardPage extends StatelessWidget {
                 ),
 
                 // Today's classes list
-                ...classes
-                    .where((cls) => cls.days.contains(currentDay))
-                    .map(
+                ...classes.where((cls) => cls.days.contains(currentDay)).map(
                       (cls) => FadeInLeft(
                         from: 20,
                         duration: const Duration(milliseconds: 400),
@@ -195,8 +193,7 @@ class DashboardPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                    )
-                    .toList(),
+                    ),
 
                 const SizedBox(height: 24),
 
