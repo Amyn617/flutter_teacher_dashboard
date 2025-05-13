@@ -1,5 +1,8 @@
 # Tableau de Bord de l'Enseignant
 
+![image](https://github.com/user-attachments/assets/0d7fc69d-ff77-4302-9039-e4add9b12b89)![image](https://github.com/user-attachments/assets/0ee09e2d-c6bb-45bb-aaf0-143c745897e0)![image](https://github.com/user-attachments/assets/bc154378-0d9a-42cd-93d3-4f47f0292ac1)
+![image](https://github.com/user-attachments/assets/15e7b17e-45a1-468c-9296-15c4b324d27f)![image](https://github.com/user-attachments/assets/88297bf7-2568-4746-b66f-7ebca3aa7472)![image](https://github.com/user-attachments/assets/735a910d-17f9-41a0-a9d3-4871beef6cc8)
+
 ## Aperçu du Projet
 
 Ce projet est une application Flutter conçue pour aider les enseignants à gérer leurs classes, suivre l'assiduité des étudiants et organiser leur emploi du temps. L'application fournit un tableau de bord centralisé affichant des informations clés et des raccourcis vers différentes fonctionnalités.
